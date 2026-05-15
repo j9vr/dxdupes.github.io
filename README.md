@@ -183,7 +183,7 @@
       <section class="panel hero-main">
         <span class="eyebrow">⚡ GitHub Pages ready • clean • responsive</span>
         <h1><span class="grad">DXDupes</span><br/>a sleek dupe log website</h1>
-        <p class="sub">A simple, polished website for showcasing dupes, updates, notes, and submissions. Everything works in one file, saves locally in the browser, and is easy to publish on GitHub Pages.</p>
+        <p class="sub">A simple, polished website for showcasing dupes, updates, notes, and submissions. This is where you get your dupes (files). Everything works in one file, saves locally in the browser, and is easy to publish on GitHub Pages.</p>
         <div class="actions">
           <button class="btn btn-primary" onclick="document.getElementById('dupes').scrollIntoView({behavior:'smooth'})">View Dupe Log</button>
           <button class="btn btn-ghost" onclick="resetDemo()">Reset Demo Data</button>
@@ -228,6 +228,8 @@
         <p class="lead">Add a new dupe note or update to the log. It saves instantly in the browser.</p>
         <form id="entryForm">
           <div class="formgrid">
+            <input class="field full" id="fileUpload" type="file" multiple />
+            <input class="field full" id="screenshotUpload" type="file" accept="image/*" multiple />
             <input class="field" id="title" placeholder="Title" required />
             <input class="field" id="category" placeholder="Category" required />
             <input class="field full" id="status" placeholder="Status label, e.g. Verified" required />
@@ -242,7 +244,7 @@
             <button class="btn btn-primary" type="submit">Add entry</button>
             <button class="btn btn-ghost" type="button" id="fillDemo">Fill example</button>
           </div>
-          <div class="hint">Tip: after publishing on GitHub Pages, this site will work without any extra services.</div>
+          <div class="hint">Upload dupe files and screenshots directly from your PC. Files are stored locally in the browser for demo/static GitHub Pages use.</div>
         </form>
       </section>
 
@@ -285,7 +287,9 @@
         description: 'A sample entry showing how an item looks in the log. Replace this with your own dupe notes or updates.',
         tags: ['sample', 'verified', 'starter'],
         featured: true,
-        createdAt: Date.now() - 86400000 * 2
+        createdAt: Date.now(),
+        files: uploadedFiles,
+        screenshots: uploadedScreenshots - 86400000 * 2
       },
       {
         id: crypto.randomUUID(),
@@ -314,6 +318,8 @@
       description: document.getElementById('description'),
       tags: document.getElementById('tags'),
       featuredSelect: document.getElementById('featured'),
+      fileUpload: document.getElementById('fileUpload'),
+      screenshotUpload: document.getElementById('screenshotUpload'),
       fillDemo: document.getElementById('fillDemo'),
       modalBackdrop: document.getElementById('modalBackdrop'),
       modalBody: document.getElementById('modalBody'),
@@ -406,6 +412,8 @@
             <span>${new Date(e.createdAt).toLocaleDateString()}</span>
           </div>
           <div class="pillrow">${(e.tags || []).map(t => `<span class="pill">#${escapeHtml(t.trim())}</span>`).join('')}</div>
+          ${e.files && e.files.length ? `<div class="meta"><span>📦 Files: ${e.files.map(f => escapeHtml(f.name)).join(', ')}</span></div>` : ''}
+          ${e.screenshots && e.screenshots.length ? `<div class="meta"><span>🖼️ Screenshots: ${e.screenshots.length}</span></div>` : ''}
           <div class="card-actions">
             <button class="tiny" data-action="view" data-id="${e.id}">View</button>
             <button class="tiny" data-action="copy" data-id="${e.id}">Copy JSON</button>
@@ -424,6 +432,8 @@
         <p><strong>Tags:</strong> ${escapeHtml((entry.tags || []).join(', ') || 'None')}</p>
         <p><strong>Featured:</strong> ${entry.featured ? 'Yes' : 'No'}</p>
         <p><strong>Created:</strong> ${new Date(entry.createdAt).toLocaleString()}</p>
+        ${entry.files && entry.files.length ? `<p><strong>Files:</strong><br>${entry.files.map(f => `📦 ${escapeHtml(f.name)} (${escapeHtml(f.size)})`).join('<br>')}</p>` : ''}
+        ${entry.screenshots && entry.screenshots.length ? `<div><strong>Screenshots:</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px;">${entry.screenshots.map(s => `<img src="${s.url}" alt="${escapeHtml(s.name)}" style="width:100%;border-radius:16px;border:1px solid rgba(255,255,255,.08)">`).join('')}</div></div>` : ''}
       `;
       els.modalBackdrop.style.display = 'flex';
       els.modalBackdrop.setAttribute('aria-hidden', 'false');
@@ -466,6 +476,16 @@
 
     els.form.addEventListener('submit', (ev) => {
       ev.preventDefault();
+      const uploadedFiles = Array.from(els.fileUpload.files || []).map(f => ({
+        name: f.name,
+        size: `${(f.size / 1024).toFixed(1)} KB`
+      }));
+
+      const uploadedScreenshots = Array.from(els.screenshotUpload.files || []).map(file => ({
+        name: file.name,
+        url: URL.createObjectURL(file)
+      }));
+
       const newEntry = {
         id: crypto.randomUUID(),
         title: els.title.value.trim(),

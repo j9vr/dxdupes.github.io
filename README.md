@@ -262,6 +262,26 @@
 
 <script>
 
+// IMPORTANT:
+// You MUST create these in Supabase:
+//
+// TABLE NAME: dupes
+// columns:
+// id -> int8 -> primary key
+// title -> text
+// category -> text
+// description -> text
+// dupe_url -> text
+// screenshot_url -> text
+// created_at -> timestamptz
+//
+// STORAGE BUCKET NAME:
+// files
+//
+// ALSO:
+// Make the bucket PUBLIC.
+// Turn OFF Row Level Security on the dupes table.
+
 const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_URL';
 const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_KEY';
 

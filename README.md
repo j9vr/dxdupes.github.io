@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DXDupes</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,11 +21,13 @@
       --radius:24px;
     }
 
-    *{box-sizing:border-box}
+    *{
+      box-sizing:border-box;
+    }
 
     body{
       margin:0;
-      font-family:Inter,Arial,sans-serif;
+      font-family:Arial,sans-serif;
       background:
       radial-gradient(circle at top left, rgba(155,92,255,.25), transparent 28%),
       radial-gradient(circle at top right, rgba(59,130,246,.20), transparent 28%),
@@ -108,7 +110,7 @@
 
     .controls{
       display:grid;
-      grid-template-columns:1fr 220px auto;
+      grid-template-columns:1fr 1fr auto;
       gap:12px;
       margin-bottom:18px;
     }
@@ -126,6 +128,7 @@
     textarea.field{
       min-height:120px;
       resize:vertical;
+      margin-top:12px;
     }
 
     .btn{
@@ -134,9 +137,6 @@
       border-radius:16px;
       padding:14px 18px;
       font-weight:700;
-    }
-
-    .btn-primary{
       background:linear-gradient(135deg,var(--purple),var(--blue));
       color:white;
     }
@@ -199,7 +199,7 @@
       color:white;
     }
 
-    .tiny.delete{
+    .delete{
       background:rgba(255,0,0,.15);
     }
 
@@ -210,8 +210,13 @@
     }
 
     @media(max-width:800px){
-      h1{font-size:2.7rem}
-      .controls{grid-template-columns:1fr}
+      h1{
+        font-size:2.7rem;
+      }
+
+      .controls{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -228,18 +233,21 @@
 
   <div class="hero">
     <h1><span class="grad">DXDupes</span></h1>
+
     <p class="sub">
-      This is where you get your dupes (files). Upload files and screenshots online with Supabase so everyone can see them.
+      This is where you get your dupes (files).
+      Upload and share dupes online with screenshots.
     </p>
   </div>
 
   <div class="panel">
+
     <h2>Upload Dupe</h2>
 
     <div class="controls">
       <input id="title" class="field" placeholder="Title">
       <input id="category" class="field" placeholder="Category">
-      <button class="btn btn-primary" onclick="postDupe()">Post Dupe</button>
+      <button class="btn" onclick="postDupe()">Post Dupe</button>
     </div>
 
     <textarea id="description" class="field" placeholder="Description"></textarea>
@@ -251,6 +259,7 @@
     <br><br>
 
     <input id="screenshotFile" class="field" type="file" accept="image/*">
+
   </div>
 
   <div class="panel">
@@ -262,28 +271,9 @@
 
 <script>
 
-// IMPORTANT:
-// You MUST create these in Supabase:
-//
-// TABLE NAME: dupes
-// columns:
-// id -> int8 -> primary key
-// title -> text
-// category -> text
-// description -> text
-// dupe_url -> text
-// screenshot_url -> text
-// created_at -> timestamptz
-//
-// STORAGE BUCKET NAME:
-// files
-//
-// ALSO:
-// Make the bucket PUBLIC.
-// Turn OFF Row Level Security on the dupes table.
+const SUPABASE_URL = 'https://qqidyasrndmhpvcdqnoy.supabase.co';
 
-const SUPABASE_URL = 'PASTE_YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'PASTE_YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_ANON_KEY = 'sb_publishable_HBdQgbgInpW6j79dJNwggA_ehUYPdXp';
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
@@ -328,7 +318,11 @@ async function postDupe(){
   }
 
   const dupeUrl = await uploadFile(dupeFile,'dupes');
-  const screenshotUrl = await uploadFile(screenshotFile,'screenshots');
+
+  const screenshotUrl = await uploadFile(
+    screenshotFile,
+    'screenshots'
+  );
 
   const { error } = await supabaseClient
     .from('dupes')
@@ -408,7 +402,10 @@ async function loadDupes(){
             <button class="tiny">Download</button>
           </a>
 
-          <button class="tiny delete" onclick="deleteDupe(${dupe.id})">
+          <button
+            class="tiny delete"
+            onclick="deleteDupe(${dupe.id})"
+          >
             Delete
           </button>
 

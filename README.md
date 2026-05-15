@@ -527,10 +527,25 @@
 
     async function filesToList(fileList) {
       const files = Array.from(fileList || []);
-      return files.map(file => ({
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(1)} KB`
-      }));
+      const results = [];
+
+      for (const file of files) {
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        results.push({
+          name: file.name,
+          size: `${(file.size / 1024).toFixed(1)} KB`,
+          type: file.type || 'application/octet-stream',
+          dataUrl
+        });
+      }
+
+      return results;
     }
 
     async function screenshotsToList(fileList) {
@@ -568,16 +583,19 @@
       }
 
       if (action === 'download') {
-        const payload = JSON.stringify(entry, null, 2);
-        const blob = new Blob([payload], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${entry.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase() || 'dupe'}.json`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+        if (!entry.files || !entry.files.length) {
+          alert('No downloadable files attached.');
+          return;
+        }
+
+        entry.files.forEach(file => {
+          const a = document.createElement('a');
+          a.href = file.dataUrl;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
       }
     });
 
